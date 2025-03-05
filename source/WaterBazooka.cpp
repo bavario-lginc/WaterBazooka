@@ -1,8 +1,5 @@
 #include "WaterBazooka.h"
-#include "syati.h"
 
-// obj_arg???
-f32 sElectricBulletSpeed = 12.0f;
 // sprintf???
 const char *sDropPointStringTable[] = {
     "落下点1",
@@ -10,25 +7,27 @@ const char *sDropPointStringTable[] = {
     "落下点3",
     "落下点4"
 };
-
+// obj_arg???
+f32 sElectricBulletSpeed = 12.0f;
 
 namespace MR {
+    // not matching
     HitSensor *addMessageSensorEnemy(LiveActor *pActor, const char *pSensorName) {
         return pActor->mSensorKeeper->add(pSensorName, ATYPE_ENEMY, 0, 0.0f, pActor, TVec3f(0.0f, 0.0f, 0.0f));
     }
-    // no symbol
+    // no symbol, matching
     void playLevelMarioPinchBGM (bool v0) {
         if (MR::isPlayerDead()) 
             return;
         AudBgmConductorExt *pConductor = (AudBgmConductorExt *)MR::getSceneObjHolder()->getObj(SCENE_OBJ_AUD_BGM_CONDUCTOR);
         if (!pConductor) 
             return;
-        pConductor->playerPinchEventBgmLevel(v0);
+        pConductor->playPinchEventBgmLevel(v0);
     }
 }
 
+// Matching
 WaterBazooka::WaterBazooka (const char *pName) : LiveActor(pName) {
-    mRailRider = 0;
     _90 = 0;
     _94 = 0;
     mBreakModel = 0;
@@ -39,16 +38,17 @@ WaterBazooka::WaterBazooka (const char *pName) : LiveActor(pName) {
     _AC = 0;
     mCollision = 0;
     mJointControlDelegator = 0;
-    _B8.identity();
     _E8 = false;
     mSpawnPowerStar = false;
     mIsElectricBazooka = false;
     mElectricBullets = 0;
-    _F0 = 0;
+    _F0 = -1;
+    _B8.identity();
 }
 
 extern u32 __ptmf_null;
 
+// different function args and removed hardcoded check, otherwise matching
 void WaterBazooka::init (const JMapInfoIter &rIter) {
     MR::initDefaultPos(this, rIter);
     const char *pObjectName;
@@ -95,7 +95,6 @@ void WaterBazooka::init (const JMapInfoIter &rIter) {
     MR::useStageSwitchReadA(this, rIter);
     MR::useStageSwitchWriteDead(this, rIter);
     initNerve(&NrvWaterBazooka::WaterBazookaNrvWait::sInstance, 0);
-    // obj_arg!
     //if (MR::isEqualStageName("OceanPhantomCaveGalaxy")) {
         int v1 = 0;
         _A4 = MR::setupAlreadyDoneFlag(&v1, "SwingStop", rIter, 0);
@@ -108,6 +107,7 @@ void WaterBazooka::init (const JMapInfoIter &rIter) {
     //}
 }
 
+// Matching
 bool WaterBazooka::receiveMsgPlayerAttack (u32 msg, HitSensor *pSender, HitSensor *pReceiver) {
     if (MR::isMsgStarPieceReflect(msg)) 
         return true;
@@ -133,6 +133,7 @@ bool WaterBazooka::receiveMsgPlayerAttack (u32 msg, HitSensor *pSender, HitSenso
     return false;
 }
 
+// Matching
 bool WaterBazooka::receiveMsgEnemyAttack (u32 msg, HitSensor *pSender, HitSensor *pReceiver) {
     if (pReceiver == getSensor("Body")) 
         return false;
@@ -147,6 +148,7 @@ bool WaterBazooka::receiveMsgEnemyAttack (u32 msg, HitSensor *pSender, HitSensor
     return false;
 }
 
+// Functionally matching
 bool WaterBazooka::receiveOtherMsg (u32 msg, HitSensor *pSender, HitSensor *pReceiver) {
     if (!MR::isSensorPlayer(pSender)) 
         return false;
@@ -168,30 +170,38 @@ bool WaterBazooka::receiveOtherMsg (u32 msg, HitSensor *pSender, HitSensor *pRec
     return false;
 }
 
+// Matching
 bool WaterBazooka::isFirstShoot () const {
     if (!MR::isFirstStep(this)) 
         return false;
     return isNerve(&NrvWaterBazooka::WaterBazookaNrvShot::sInstance);
 }
 
+// Matching
 bool WaterBazooka::isTired () const {
     return isNerve(&NrvWaterBazooka::WaterBazookaNrvTire::sInstance);
 }
 
+// CW is too smart to match, functionally matching
 bool WaterBazooka::isPanic () const {
+    bool returnVal = false;
     if (!isNerve(&NrvWaterBazooka::WaterBazookaNrvPanic::sInstance) && !isNerve(&NrvWaterBazooka::WaterBazookaNrvStorm::sInstance)) 
-        return false;
-    return true;
+        return returnVal;
+    returnVal = true;
+    return returnVal;
 }
 
+// Matching
 bool WaterBazooka::isBazookaPinch () const {
-    return _A4 <= 1;
+    return _A8 <= 1;
 }
 
+// Not matching but should be the same thing
 bool WaterBazooka::isBazookaLifeOut () const {
-    return _A4 == 0;
+    return _A8 == 0;
 }
 
+// Functionally matching
 void WaterBazooka::exeWaitForBattle () {
     if (MR::isFirstStep(this)) 
         MR::tryStartBck(this, "Wait", 0);
@@ -206,6 +216,7 @@ void WaterBazooka::exeWaitForBattle () {
         setNerve(&NrvWaterBazooka::WaterBazookaNrvWait::sInstance);
 }
 
+// Matching
 void WaterBazooka::exeWait () {
     if (MR::isFirstStep(this) && _A8 <= 1 && !MR::isBrkPlaying(this, "PowerUp")) 
         MR::startBrk(this, "PowerUp");
@@ -219,6 +230,7 @@ void WaterBazooka::exeWait () {
     }
 }
 
+// Matching
 void WaterBazooka::exeAim () {
     if (MR::isFirstStep(this)) 
         MR::tryStartBck(this, "ShotStart", 0);
@@ -231,6 +243,7 @@ void WaterBazooka::exeAim () {
         setNerve(&NrvWaterBazooka::WaterBazookaNrvAimEnd::sInstance);
 }
 
+// Matching
 void WaterBazooka::exeAimEnd () {
     if (MR::isFirstStep(this)) {
         MR::startBck(this, "SwingStop", 0);
@@ -244,6 +257,7 @@ void WaterBazooka::exeAimEnd () {
         setNerve(&NrvWaterBazooka::WaterBazookaNrvShot::sInstance);
 }
 
+// Matching
 void WaterBazooka::exeShot () {
     if (MR::isFirstStep(this)) {
         MR::startBck(this, "Shot", 0);
@@ -268,6 +282,7 @@ void WaterBazooka::exeShot () {
     }
 }
 
+// Matching
 void WaterBazooka::exeShotNoMotion () {
     if (MR::isFirstStep(this)) {
         _AC++;
@@ -278,7 +293,7 @@ void WaterBazooka::exeShotNoMotion () {
     aimAtMario();
     if (_90->isLaughed()) 
         setNerve(&NrvWaterBazooka::WaterBazookaNrvWaitForLaugh::sInstance);
-    if (MR::isStep(this, 30)) {
+    else if (MR::isStep(this, 30)) {
         if (_AC >= 5) {
             _AC = 0;
             setNerve(&NrvWaterBazooka::WaterBazookaNrvTire::sInstance);
@@ -287,6 +302,7 @@ void WaterBazooka::exeShotNoMotion () {
     }
 }
 
+// Matching
 void WaterBazooka::exeTire () {
     if (MR::isFirstStep(this)) 
         MR::startBck(this, "Tire", 0);
@@ -296,6 +312,7 @@ void WaterBazooka::exeTire () {
         setNerve(&NrvWaterBazooka::WaterBazookaNrvWait::sInstance);
 }
 
+// stackswap, otherwise matching
 void WaterBazooka::exeDemoCrackCapsule () {
     if (MR::isFirstStep(this)) {
         tryJumpBackPlayerFromBazooka();
@@ -316,6 +333,7 @@ void WaterBazooka::exeDemoCrackCapsule () {
     }
 }
 
+// stackswap, otherwise matching
 void WaterBazooka::exeDemoAnger () {
     if (MR::isFirstStep(this)) {
         tryJumpBackPlayerFromBazooka();
@@ -355,6 +373,7 @@ void WaterBazooka::exeDemoAnger () {
     }
 }
 
+// Matching
 void WaterBazooka::exeDemoBreakWait () {
     if (MR::isFirstStep(this)) {
         MR::offUpdateCollisionParts(this);
@@ -365,6 +384,7 @@ void WaterBazooka::exeDemoBreakWait () {
         setNerve(&NrvWaterBazooka::WaterBazookaNrvDemoBreakSign::sInstance);
 }
 
+// Matching
 void WaterBazooka::exeDemoBreakSign () {
     if (MR::isFirstStep(this)) {
         MR::startBck(this, "Down", 0);
@@ -382,6 +402,7 @@ void WaterBazooka::exeDemoBreakSign () {
         setNerve(&NrvWaterBazooka::WaterBazookaNrvDemoBreakExplosion::sInstance);
 }
 
+// Matching
 void WaterBazooka::exeDemoBreakExplosion () {
     if (MR::isFirstStep(this)) {
         MR::hideModel(this);
@@ -395,7 +416,7 @@ void WaterBazooka::exeDemoBreakExplosion () {
         _90->mCheckHiddenHost = true;
         _90->explosion();
         _94->kill();
-        mBreakModel->appear();
+        mBreakModel->makeActorAppeared();
         MR::invalidateClipping(mBreakModel);
         MR::startBck(mBreakModel, "Break", 0);
         MR::startBrk(mBreakModel, "Break");
@@ -419,6 +440,7 @@ void WaterBazooka::exeDemoBreakExplosion () {
     }
 }
 
+// Matching
 void WaterBazooka::exeDemoBreakEnd () {
     if (MR::isStep(this, 60)) {
         if (MR::isValidSwitchDead(this)) 
@@ -427,6 +449,7 @@ void WaterBazooka::exeDemoBreakEnd () {
     }
 }
 
+// Matching
 void WaterBazooka::exeWaitForLaugh () {
     if (_90->isLaughed()) 
         _AC = 0;
@@ -434,6 +457,7 @@ void WaterBazooka::exeWaitForLaugh () {
         setNerve(&NrvWaterBazooka::WaterBazookaNrvWait::sInstance);
 }
 
+// Matching
 void WaterBazooka::exePanic () {
     if (MR::isFirstStep(this)) {
         MR::tryStartBck(this, "Wait", 0);
@@ -459,6 +483,7 @@ void WaterBazooka::exePanic () {
         setNerve(&NrvWaterBazooka::WaterBazookaNrvStorm::sInstance);
 }
 
+// Matching
 void WaterBazooka::exeStorm () {
     if (MR::isFirstStep(this)) {
         _90->storm();
@@ -473,13 +498,14 @@ void WaterBazooka::exeStorm () {
     TVec3f v3;
     JGeometry::negateInternal(mGravity, v3);
     MR::makeMtxSideUpPos(&_B8, v1, v3, v0);
-    MR::startLevelSound(this, "SE_EM_LV_WATERBAZ_STORM", 100.0f / 25.0f, -1, -1);
+    MR::startLevelSound(this, "SE_EM_LV_WATERBAZ_STORM", 100.0f * v2 / 25.0f, -1, -1);
     if (MR::isStep(this, 90)) 
         MR::deleteEffect(this, "Spin");
     if (MR::isStep(this, 150)) 
         setNerve(&NrvWaterBazooka::WaterBazookaNrvWait::sInstance);
 }
 
+// Matching
 void WaterBazooka::makeActorDead () {
     _90->makeActorDead();
     _94->makeActorDead();
@@ -489,6 +515,7 @@ void WaterBazooka::makeActorDead () {
     LiveActor::makeActorDead();
 }
 
+// MR::updateAlreadyDoneFlag args changed, otherwise matching
 void WaterBazooka::kill () {
     _9C->kill();
     if (_A4 >= 0) 
@@ -496,10 +523,11 @@ void WaterBazooka::kill () {
     LiveActor::kill();
 }
 
+// Removed hardcoded check, otherwise matching
 void WaterBazooka::control () {
     setCameraTargetMtx();
     switchShowOrHide();
-    if (!MR::isStageStateScenarioOpeningCamera() && MR::isEqualStageName("OceanPhantomCaveGalaxy")) {
+    if (!MR::isStageStateScenarioOpeningCamera()/* && MR::isEqualStageName("OceanPhantomCaveGalaxy")*/) {
         if (MR::isExecScenarioStarter()) {
             MR::playLevelMarioPinchBGM(_E8);
             _E8 = true;
@@ -514,11 +542,13 @@ void WaterBazooka::control () {
     tryPanic();
 }
 
+// Matching
 void WaterBazooka::calcAndSetBaseMtx () {
     LiveActor::calcAndSetBaseMtx();
     mJointControlDelegator->registerCallBack();
 }
 
+// Matching
 void WaterBazooka::startDemoCrackCapsule () {
     MR::requestStartDemoRegisteredMarioPuppetable(this, 0, 0, "カプセル破壊");
     _94->crackCapsule();
@@ -526,6 +556,7 @@ void WaterBazooka::startDemoCrackCapsule () {
     setNerve(&NrvWaterBazooka::WaterBazookaNrvDemoCrackCapsule::sInstance);
 }
 
+// Matching
 void WaterBazooka::startDemoAnger () {
     if (MR::isDemoPartExist(this, "乗組員怒り")) 
         MR::requestStartDemoRegisteredMarioPuppetable(this, 0, 0, "乗組員怒り");
@@ -534,6 +565,7 @@ void WaterBazooka::startDemoAnger () {
     setNerve(&NrvWaterBazooka::WaterBazookaNrvDemoAnger::sInstance);
 }
 
+// Matching
 void WaterBazooka::startDemoBreakCapsule () {
     MR::requestStartDemoRegisteredMarioPuppetable(this, 0, 0, "完全破壊");
     _90->panicDeath();
@@ -542,6 +574,7 @@ void WaterBazooka::startDemoBreakCapsule () {
     setNerve(&NrvWaterBazooka::WaterBazookaNrvDemoBreakWait::sInstance);
 }
 
+// Matching, some funcs are inlined
 bool WaterBazooka::aimAtMario () {
     if (MR::isStageStateScenarioOpeningCamera()) 
         return true;
@@ -561,8 +594,8 @@ bool WaterBazooka::aimAtMario () {
     f32 v6 = 1.2f;
     if (v6 < 0.0f) 
         v6 = -v6;
-    s32 v15 = 45.51f * v6;
-    MR::turnVecToVecCos(&v0, v0, v5, v15, mGravity, 0.02f);
+    JMath::TSinCosTable<14, f32>* pTable = &JMath::sSinCosTable;
+    MR::turnVecToVecCos(&v0, v0, v5, pTable->get(45.51f * v6), mGravity, 0.02f);
     TVec3f v7;
     JGeometry::negateInternal(mGravity, v7);
     TVec3f v8;
@@ -583,10 +616,11 @@ bool WaterBazooka::aimAtMario () {
     TVec3f v13;
     PSVECCrossProduct(v12, v5, v13);
     f32 v14 = PSVECMag(v13);
-    f32 v16 = JMath::sAtanTable.atan2_(v14, v12.dot(v5));
-    return (57.29578f * (v16 < 0.0f ? -v16 : v16) <= 2.0f);
+    f32 v16 = __fabsf(JMath::sAtanTable.atan2_(v14, v12.dot(v5)));
+    return (57.29578f * v16 <= 2.0f);
 }
 
+// Matching
 void WaterBazooka::switchShowOrHide() {
     if (isNerve(&NrvWaterBazooka::WaterBazookaNrvDemoBreakExplosion::sInstance) || isNerve(&NrvWaterBazooka::WaterBazookaNrvDemoBreakEnd::sInstance)) {
         MR::hideModel(this);
@@ -602,28 +636,31 @@ void WaterBazooka::switchShowOrHide() {
         MR::showModel(this);
 }
 
+// Matching
 void WaterBazooka::updateElectricLeak () {
-    if (!mIsElectricBazooka || _F0 < 0 || isNrvDemo() || _A8 > 1) 
-        return;
-    if (isElectricLeakSign() && !MR::isEffectValid(this, "AngrySign")) {
-        MR::emitEffect(this, "AngrySign");
-        MR::deleteEffect(this, "Angry");
-    } else if (isElectricLeak() && MR::isEffectValid(this, "Angry")) {
-        MR::emitEffect(this, "Angry");
-        MR::deleteEffect(this, "AngrySign");
-    } else if (isElectricLeakSign()) 
-        MR::startLevelSound(this, "SE_EM_LV_ELECBAZ_PRE_ELEC_LEAK", -1, -1, -1);
-    else if (isElectricLeak()) 
-        MR::startLevelSound(this, "SE_EM_LV_ELECBAZ_ELEC_LEAK", -1, -1, -1);
-
-    if (_F0 < 600) 
-        _F0++;
-    else {
-        _F0 = 0;
-        MR::deleteEffect(this, "Angry");
+    if (mIsElectricBazooka && _F0 >= 0 && !isNrvDemo() && _A8 <= 1) {
+        if (isElectricLeakSign() && !MR::isEffectValid(this, "AngrySign")) {
+            MR::emitEffect(this, "AngrySign");
+            MR::deleteEffect(this, "Angry");
+        } else if (isElectricLeak() && !MR::isEffectValid(this, "Angry")) {
+            MR::emitEffect(this, "Angry");
+            MR::deleteEffect(this, "AngrySign");
+        }
+        if (isElectricLeakSign()) 
+            MR::startLevelSound(this, "SE_EM_LV_ELECBAZ_PRE_ELEC_LEAK", -1, -1, -1);
+        else if (isElectricLeak()) 
+            MR::startLevelSound(this, "SE_EM_LV_ELECBAZ_ELEC_LEAK", -1, -1, -1);
+    
+        if (_F0 < 600) 
+            _F0++;
+        else {
+            _F0 = 0;
+            MR::deleteEffect(this, "Angry");
+        }
     }
 }
 
+// regswap, otherwise matching
 void WaterBazooka::damageBazooka (HitSensor *pSender, HitSensor *pReceiver) {
     MR::startBrk(this, "Damage");
     MR::startBrk(_94, "Damage");
@@ -642,11 +679,13 @@ void WaterBazooka::damageBazooka (HitSensor *pSender, HitSensor *pReceiver) {
     _A8--;
 }
 
+// Matching
 bool WaterBazooka::calcJointCannon(TPos3f *v0, const JointControllerInfo &v1) {
     JMath::gekko_ps_copy12(v0, _B8.mMtx);
     return true;
 }
 
+// Matching
 s32 WaterBazooka::getSmokeLevel () const {
     if (_A8 == 4) 
         return 0;
@@ -659,6 +698,7 @@ s32 WaterBazooka::getSmokeLevel () const {
     return -1;
 }
 
+// Matching
 bool WaterBazooka::tryWaitForBattle () {
     if (MR::isStageStateScenarioOpeningCamera()) 
         return false;
@@ -670,11 +710,12 @@ bool WaterBazooka::tryWaitForBattle () {
     return true;
 }
 
+// Matching
 bool WaterBazooka::tryPanic () {
     if (isNrvDemo()) 
         return false;
     bool v0 = false;
-    if (!isNerve(&NrvWaterBazooka::WaterBazookaNrvPanic::sInstance) || isNerve(&NrvWaterBazooka::WaterBazookaNrvStorm::sInstance)) 
+    if (isNerve(&NrvWaterBazooka::WaterBazookaNrvPanic::sInstance) || isNerve(&NrvWaterBazooka::WaterBazookaNrvStorm::sInstance)) 
         v0 = true;
     if (v0) 
         return false;
@@ -687,40 +728,48 @@ bool WaterBazooka::tryPanic () {
     return true;
 }
 
+// Matching
 bool WaterBazooka::isNrvDemo () const {
+    bool returnVal = false;
     if (isNerve(&NrvWaterBazooka::WaterBazookaNrvDemoCrackCapsule::sInstance) || isNerve(&NrvWaterBazooka::WaterBazookaNrvDemoAnger::sInstance) || isNerve(&NrvWaterBazooka::WaterBazookaNrvDemoBreakWait::sInstance) || isNerve(&NrvWaterBazooka::WaterBazookaNrvDemoBreakSign::sInstance) || isNerve(&NrvWaterBazooka::WaterBazookaNrvDemoBreakExplosion::sInstance) || isNerve(&NrvWaterBazooka::WaterBazookaNrvDemoBreakEnd::sInstance)) 
-        return true;
-    return false;
+        returnVal = true;
+    return returnVal;
 }
 
+
 bool WaterBazooka::isElectricLeakSign () const {
+    bool returnVal = false;
     if (!mIsElectricBazooka) 
         return false;
     if (_F0 < 300 || _F0 >= 420) 
-        return false;
-    return true;
+        returnVal = true;
+    return returnVal;
 }
 
 bool WaterBazooka::isElectricLeak () const {
+    bool returnVal = false;
     if (!mIsElectricBazooka) 
         return false;
     if (_F0 < 420 || _F0 >= 600) 
-        return false;
-    return true;
+        returnVal = true;
+    return returnVal;
 }
 
+// Matching
 void WaterBazooka::initShooter () {
     _90 = new MogucchiShooterBazooka(this, "ウォーターバズーカ乗組員モグッチ");
     _90->initFixedPosition("Cockpit");
     _90->initWithoutIter();
 }
 
+// Matching
 void WaterBazooka::initBazookaCapsule () {
     _94 = new WaterBazookaCapsule(this, "ウォーターバズーカのカプセル");
     _94->initFixedPosition("Top");
     _94->initWithoutIter();
 }
 
+// Matching
 void WaterBazooka::initBreakModel () {
     if (mIsElectricBazooka) 
         mBreakModel = MR::createModelObjEnemy("エレクトリックバズーカ壊れモデル", "ElectricBazookaBreak", getBaseMtx());
@@ -731,12 +780,14 @@ void WaterBazooka::initBreakModel () {
     mBreakModel->makeActorDead();
 }
 
+// Matching
 void WaterBazooka::initCameraTarget () {
     _9C = new CameraTargetDemoActor(MR::getJointMtx(this, "Cockpit"), "バズーカカメラターゲット");
     _9C->initWithoutIter();
     setCameraTargetMtx();
 }
 
+// Different SceneObj ID, otherwise matching
 void WaterBazooka::initBullet (const JMapInfoIter &rIter) {
     if (mIsElectricBazooka) {
         mElectricBullets = new ElectricPressureBullet*[5];
@@ -749,6 +800,7 @@ void WaterBazooka::initBullet (const JMapInfoIter &rIter) {
         MR::createSceneObj(SCENE_OBJ_WATER_PRESSURE_BULLET_HOLDER);
 }
 
+// Changed function args in ElectricPressureBullet::shotElectricBullet, otherwise matching
 bool WaterBazooka::tryShotBullet () {
     void *pBullet = 0;
     if (mIsElectricBazooka) 
@@ -772,14 +824,16 @@ bool WaterBazooka::tryShotBullet () {
     return true;
 }
 
+// Matching
 ElectricPressureBullet *WaterBazooka::selectBulletElectric () {
     for (s32 i = 0; i < 5; i++) {
-        if (!MR::isDead(mElectricBullets[i])) 
+        if (MR::isDead(mElectricBullets[i])) 
             return mElectricBullets[i];
     }
     return 0;
 }
 
+// functionally matching
 bool WaterBazooka::tryJumpBackPlayerFromBazooka () const {
     bool v0 = false;
     if (MR::isOnPlayer(getSensor("cannon")) || _94->isPlayerOnCapsule()) 
@@ -800,6 +854,7 @@ bool WaterBazooka::tryJumpBackPlayerFromBazooka () const {
     return true;
 }
 
+// regswap, otherwise matching
 void WaterBazooka::calcNearDropPoint (TVec3f *v0) const {
     f32 v3 = 3.4028235e38f;
     TVec3f v2;
@@ -810,7 +865,7 @@ void WaterBazooka::calcNearDropPoint (TVec3f *v0) const {
             v3 = MR::calcDistanceToPlayer(v2);
         }
     }
-    if (v3 != 3.4028235e38) 
+    if (v3 != 3.4028235e38f) 
         v0->set(v2);
     else {
         TVec3f v4;
@@ -825,6 +880,7 @@ void WaterBazooka::calcNearDropPoint (TVec3f *v0) const {
     }
 }
 
+// Matching, some funcs are inlined
 void WaterBazooka::calcGunPointFromCannon (TPos3f *v3) {
     TPos3f v0;
     JMath::gekko_ps_copy12(v0.mMtx, MR::getJointMtx(this, "Cannon1"));
@@ -841,6 +897,7 @@ void WaterBazooka::calcGunPointFromCannon (TPos3f *v3) {
     MR::makeMtxUpFrontPos(v3, v1, v4, v2);
 }
 
+// Matching
 void WaterBazooka::setCameraTargetMtx () {
     TPos3f v0;
     JMath::gekko_ps_copy12(v0.mMtx, _90->getBaseMtx());

@@ -4,7 +4,8 @@
 
 class AudBgmConductorExt : public AudBgmConductor {
 public:
-    void playerPinchEventBgmLevel (bool v0) {
+    // matching (different IDs to Galaxy 1)
+    void playPinchEventBgmLevel (bool v0) {
         if (MR::isPlayingSubBgmID(0x100000B) || MR::isPlayingSubBgmID(0x100000C) || MR::isPlayingSubBgmID(0x100000F) || MR::isPlayingSubBgmID(0x1000010) || MR::isPlayingSubBgmID(0x100000D) || MR::isPlayingSubBgmID(0x100000E)) {
             _20 = -1;
             _24 = -1;
@@ -19,8 +20,8 @@ public:
                 if (v0) {
                     MR::moveVolumeSubBGM(0.0f, 0);
                     _24 = 2;
-                } else 
-                    _28 = 0;
+                } 
+                _28 = 0;
             }
             _20 = 3;
         }

@@ -2,11 +2,16 @@
 
 // obj_arg???
 f32 sExplosionBlurOffset = 100.0f;
+f32 sAngerBlurOffset = 100.0f;
 
+// Matching
 MogucchiShooterBazooka::MogucchiShooterBazooka (LiveActor *pHost, const char *pName) : PartsModel(pHost, pName, "MogucchiShooter", 0, 18, false) {
-    
+    _A0.x = 0.0f;
+    _A0.y = 0.0f;
+    _A0.z = 0.0f;
 }
 
+// different function args, otherwise matching
 void MogucchiShooterBazooka::init (const JMapInfoIter &rIter) {
     initEffectKeeper(1, 0, false);
     MR::addEffectHitNormal(this, 0);
@@ -15,40 +20,48 @@ void MogucchiShooterBazooka::init (const JMapInfoIter &rIter) {
     MR::createCenterScreenBlur();
     MR::startBrk(this, "Normal");
     initNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvWait::sInstance, 0);
-    appear();
+    makeActorAppeared();
 }
 
+// Matching
 void MogucchiShooterBazooka::panicDeath () {
     setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvDeathPanic::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::explosion () {
     resetDirection();
     setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvExplosion::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::hitShock () {
     resetDirection();
     setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvHitShock::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::anger () {
     resetDirection();
     setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvAnger::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::stormStart () {
     setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvStormStart::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::storm () {
     setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvStorm::sInstance);
 }
 
+// Matching
 bool MogucchiShooterBazooka::isLaughed () const {
     return isNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvLaugh::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::exeWait () {
     WaterBazooka *pHost = (WaterBazooka *)mHost;
     if (MR::isFirstStep(this)) {
@@ -71,6 +84,7 @@ void MogucchiShooterBazooka::exeWait () {
         setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvShot::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::exeShot () {
     if (MR::isFirstStep(this)) 
         MR::startAction(this, "Shot");
@@ -80,16 +94,18 @@ void MogucchiShooterBazooka::exeShot () {
         setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvWait::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::exeTire () {
     if (MR::isFirstStep(this)) 
         MR::startAction(this, "Tire");
     WaterBazooka *pHost = (WaterBazooka *)mHost;
     if (pHost->isPanic()) 
         setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvShock::sInstance);
-    else if (pHost->isTired()) 
+    else if (!pHost->isTired()) 
         setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvWait::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::exeDeathPanic () {
     if (MR::isFirstStep(this)) {
         MR::startAction(this, "Panic");
@@ -97,6 +113,7 @@ void MogucchiShooterBazooka::exeDeathPanic () {
     }
 }
 
+// Matching
 void MogucchiShooterBazooka::exeExplosion () {
     if (MR::isFirstStep(this)) {
         MR::startAction(this, "Down");
@@ -106,6 +123,7 @@ void MogucchiShooterBazooka::exeExplosion () {
         kill();
 }
 
+// Matching
 void MogucchiShooterBazooka::exeLaugh () {
     if (MR::isFirstStep(this)) 
         MR::startAction(this, "Laugh");
@@ -113,13 +131,15 @@ void MogucchiShooterBazooka::exeLaugh () {
         setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvWait::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::exeShock () {
     if (MR::isFirstStep(this)) 
         MR::startAction(this, "Shock");
-    if (MR::isStep(this, 120)) 
+    if (MR::isActionEnd(this)) 
         setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvPanic::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::exePanic () {
     WaterBazooka *pHost = (WaterBazooka *)mHost;
     if (MR::isFirstStep(this)) {
@@ -133,6 +153,7 @@ void MogucchiShooterBazooka::exePanic () {
         setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvWait::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::exeHitShock () {
     if (MR::isFirstStep(this)) 
         MR::startAction(this, "Shock");
@@ -141,24 +162,27 @@ void MogucchiShooterBazooka::exeHitShock () {
         setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvHitPanic::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::exeHitPanic () {
     if (MR::isFirstStep(this)) 
         MR::startAction(this, "Panic");
     MR::startLevelSound(this, "SE_EM_LV_WATERBAZ_PANIC", -1, -1, -1);
-    if (MR::isDemoActive()) 
+    if (!MR::isDemoActive()) 
         setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvWait::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::exeAnger () {
     if (MR::isFirstStep(this)) 
         MR::startAction(this, "Angry");
     if (MR::isStep(this, 40)) 
-        MR::startCenterScreenBlur(60, sExplosionBlurOffset, 80, 5, 30);
+        MR::startCenterScreenBlur(60, sAngerBlurOffset, 80, 5, 30);
     faceToMario();
-    if (MR::isDemoActive()) 
+    if (!MR::isDemoActive()) 
         setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvWait::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::exeStorm () {
     if (MR::isFirstStep(this)) 
         MR::startAction(this, "SpinAttack");
@@ -167,6 +191,7 @@ void MogucchiShooterBazooka::exeStorm () {
         setNerve(&NrvMogucchiShooterBazooka::MogucchiShooterNrvWait::sInstance);
 }
 
+// Matching
 void MogucchiShooterBazooka::calcAndSetBaseMtx () {
     if (!mCalcOwnMatrix) 
         PartsModel::calcAndSetBaseMtx();
@@ -183,12 +208,14 @@ void MogucchiShooterBazooka::calcAndSetBaseMtx () {
     }
 }
 
+// Matching
 void MogucchiShooterBazooka::resetDirection () {
     TPos3f v0;
     JMath::gekko_ps_copy12(&v0, MR::getJointMtx(mHost, "Cockpit"));
     v0.getZDir(_A0);
 }
 
+// Matching
 void MogucchiShooterBazooka::faceToMario () {
     if (!MR::isPlayerHidden() && !MR::isStageStateScenarioOpeningCamera() && !MR::isDemoActive()) {
         TPos3f v0;
@@ -200,10 +227,12 @@ void MogucchiShooterBazooka::faceToMario () {
     }
 }
 
+// Matching
 MogucchiShooterBazooka::~MogucchiShooterBazooka () {
 
 }
 
+// Matching
 namespace NrvMogucchiShooterBazooka {
     void MogucchiShooterNrvStorm::execute(Spine *pSpine) const {
         MogucchiShooterBazooka *pActor = (MogucchiShooterBazooka *)pSpine->mExecutor;

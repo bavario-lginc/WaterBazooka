@@ -77,7 +77,7 @@ public:
     CameraTargetDemoActor *_9C;
     ActorCameraInfo *mCameraInfo;                                   // _A0
     s32 _A4;
-    u32 _A8;
+    s32 _A8;
     u32 _AC;
     CollisionParts *mCollision;                                     // _B0
     JointControlDelegator<WaterBazooka> *mJointControlDelegator;    // _B4
@@ -86,7 +86,7 @@ public:
     bool mSpawnPowerStar;
     bool mIsElectricBazooka;                                        // _EA
     ElectricPressureBullet **mElectricBullets;
-    u32 _F0;
+    s32 _F0;
 };
 
 namespace NrvWaterBazooka {
