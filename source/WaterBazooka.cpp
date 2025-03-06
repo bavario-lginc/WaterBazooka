@@ -1,4 +1,5 @@
 #include "WaterBazooka.h"
+#include "syati.h"
 
 // sprintf???
 const char *sDropPointStringTable[] = {
